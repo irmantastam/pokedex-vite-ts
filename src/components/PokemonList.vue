@@ -73,7 +73,6 @@ const setPokemonOffset = (offset: number) => {
 
 const updateUrlPageParam = (page: string) => {
 	searchParams.set('page', page);
-
 	const updatedParamsPathname = window.location.pathname + '?' + searchParams.toString();
 	history.pushState(null, '', updatedParamsPathname);
 }
@@ -91,6 +90,10 @@ watch(pokemonsOffset, async () => {
 
 	if (pokemonsOffset.value > pokemonsCount.value - pokemonsPerPage) {
 		setPokemonOffset(pokemonsCount.value - pokemonsPerPage)
+	}
+
+	if (pokemonsOffset.value <= 0) {
+		setPokemonOffset(0)
 	}
 }, { immediate: true })
 
