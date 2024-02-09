@@ -5,8 +5,11 @@ import PokemonCard from './PokemonCard.vue';
 
 const pokemons = ref<Pokemon[]>();
 const favouritePokemons = ref<string[]>([]);
-const pokemonOffset = ref<number>(0);
-const pokemonLimit: number = 8;
+const pokemonsCount = ref<number>(0);
+const totalPages = ref<number>(0);
+const pokemonsPerPage: number = 8;
+const currentPage = ref<number>(1);
+const pokemonsOffset = ref<number>((currentPage.value - 1) * pokemonsPerPage);
 
 const pokemonApiEndpoint: string = 'https://pokeapi.co/api/v2/pokemon';
 
@@ -18,6 +21,8 @@ const fetchPokemons = async (limit: number, offset: number) => {
 			`&offset=${offset}`
 		);
 		const pokemonResponseJson: PokemonResponseJson = await pokemonResponse.json();
+		pokemonsCount.value = pokemonResponseJson.count;
+		totalPages.value = Math.ceil(pokemonsCount.value / pokemonsPerPage)
 
 		const pokemonList: Promise<Pokemon>[] = pokemonResponseJson?.results?.map(async (pokemon: PokemonResponseJsonResult) => {
 			const pokemonUrlResponse: Response = await fetch(pokemon.url)
@@ -58,7 +63,8 @@ const setFavouritePokemon = (name: string) => {
 }
 
 const setPokemonOffset = (offset: number) => {
-	pokemonOffset.value = offset >= 0 ? offset : 0;
+	pokemonsOffset.value = offset >= 0 ? offset : 0;
+	currentPage.value = pokemonsOffset.value / pokemonsPerPage + 1;
 }
 
 onMounted(() => {
@@ -69,8 +75,8 @@ onMounted(() => {
 	}
 });
 
-watch(pokemonOffset, async () => {
-	pokemons.value = await fetchPokemons(pokemonLimit, pokemonOffset.value);
+watch(pokemonsOffset, async () => {
+	pokemons.value = await fetchPokemons(pokemonsPerPage, pokemonsOffset.value);
 }, { immediate: true })
 
 const saveFavouritePokemonsToLocalStorage = () => {
@@ -87,12 +93,21 @@ const saveFavouritePokemonsToLocalStorage = () => {
 		</template>
 	</ul>
 	<div class="pagination" v-if="pokemons">
-		<button v-if="pokemonOffset > 0" class="prev" @click.prevent="setPokemonOffset(pokemonOffset - 10)">
-			Previous
-		</button>
-		<button class="next" @click.prevent="setPokemonOffset(pokemonOffset + 10)">
-			Next
-		</button>
+		<p>
+			Page
+			<strong>{{ currentPage }}</strong>
+			out of
+			<strong>{{ totalPages }}</strong>
+		</p>
+		<div class="pagination-buttons" v-if="pokemons">
+			<button v-if="currentPage > 1" class="prev" @click.prevent="setPokemonOffset(pokemonsOffset - pokemonsPerPage)">
+				Previous
+			</button>
+			<button v-if="currentPage < totalPages" class="next"
+				@click.prevent="setPokemonOffset(pokemonsOffset + pokemonsPerPage)">
+				Next
+			</button>
+		</div>
 	</div>
 </template>
 
@@ -107,8 +122,14 @@ const saveFavouritePokemonsToLocalStorage = () => {
 }
 
 .pagination {
-	display: flex;
+	max-width: 800px;
 	margin: 40px auto;
+	text-align: center;
+	color: #fff;
+}
+
+.pagination-buttons {
+	display: flex;
 	justify-content: center;
 	gap: 10px;
 }
