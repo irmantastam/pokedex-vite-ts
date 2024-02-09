@@ -85,7 +85,7 @@ const saveFavouritePokemonsToLocalStorage = () => {
 				@setFavouritePokemon="setFavouritePokemon" />
 		</template>
 	</ul>
-	<div class="pagination">
+	<div class="pagination" v-if="pokemons">
 		<button v-if="pokemonOffset > 0" class="prev" @click.prevent="setPokemonOffset(pokemonOffset - 10)">
 			Previous
 		</button>
