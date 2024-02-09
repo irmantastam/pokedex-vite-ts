@@ -3,12 +3,15 @@ import { ref, watch, onMounted } from 'vue';
 import type { Pokemon, PokemonResponseJson, PokemonResponseJsonResult, PokemonUrlResponseJson } from '../types/pokemon';
 import PokemonCard from './PokemonCard.vue';
 
+const searchParams = new URLSearchParams(window.location.search);
+const page = searchParams.get('page');
+
 const pokemons = ref<Pokemon[]>();
 const favouritePokemons = ref<string[]>([]);
 const pokemonsCount = ref<number>(0);
 const totalPages = ref<number>(0);
 const pokemonsPerPage: number = 8;
-const currentPage = ref<number>(1);
+const currentPage = ref<number>(Number(page) || 1);
 const pokemonsOffset = ref<number>((currentPage.value - 1) * pokemonsPerPage);
 
 const pokemonApiEndpoint: string = 'https://pokeapi.co/api/v2/pokemon';
@@ -64,7 +67,15 @@ const setFavouritePokemon = (name: string) => {
 
 const setPokemonOffset = (offset: number) => {
 	pokemonsOffset.value = offset >= 0 ? offset : 0;
-	currentPage.value = pokemonsOffset.value / pokemonsPerPage + 1;
+	currentPage.value = Math.ceil(pokemonsOffset.value / pokemonsPerPage) + 1;
+	updateUrlPageParam(currentPage.value.toString());
+}
+
+const updateUrlPageParam = (page: string) => {
+	searchParams.set('page', page);
+
+	const updatedParamsPathname = window.location.pathname + '?' + searchParams.toString();
+	history.pushState(null, '', updatedParamsPathname);
 }
 
 onMounted(() => {
@@ -77,6 +88,10 @@ onMounted(() => {
 
 watch(pokemonsOffset, async () => {
 	pokemons.value = await fetchPokemons(pokemonsPerPage, pokemonsOffset.value);
+
+	if (pokemonsOffset.value > pokemonsCount.value - pokemonsPerPage) {
+		setPokemonOffset(pokemonsCount.value - pokemonsPerPage)
+	}
 }, { immediate: true })
 
 const saveFavouritePokemonsToLocalStorage = () => {
