@@ -27,7 +27,7 @@ const fetchPokemons = async (limit: number, offset: number) => {
 			return {
 				name: pokemon.name,
 				photo: pokemonPhoto,
-				isFavourite: !!favouritePokemons.value.find((name) => name === pokemon.name),
+				isFavourite: favouritePokemons.value.includes(pokemon.name),
 			}
 		});
 
@@ -39,20 +39,21 @@ const fetchPokemons = async (limit: number, offset: number) => {
 }
 
 const setFavouritePokemon = (name: string) => {
-	pokemons.value = pokemons.value.map((item) => {
-		if (item.name !== name) {
-			return item;
+	pokemons.value = pokemons.value.map((pokemon) => {
+		if (pokemon.name !== name) {
+			return pokemon;
 		}
 
 		return {
-			...item,
-			isFavourite: !item.isFavourite,
+			...pokemon,
+			isFavourite: !pokemon.isFavourite,
 		};
 	})
-	favouritePokemons.value = pokemons.value.reduce((result, value) => ([
-		...result,
-		...(value.isFavourite ? [value.name] : []),
-	]), []);
+
+	favouritePokemons.value = favouritePokemons.value.includes(name) ?
+		favouritePokemons.value.filter((favourite) => favourite !== name) :
+		[...favouritePokemons.value, name];
+
 	saveFavouritePokemonsToLocalStorage();
 }
 
