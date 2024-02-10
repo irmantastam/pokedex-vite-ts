@@ -26,9 +26,10 @@ const setFavouritePokemon = (name: string) => {
 
 <template>
 	<li class="card">
-		<img :src="photo" class="image" />
+		<img :src="photo" class="image" :alt="name" />
 		<h2 class="name">{{ name }}</h2>
-		<button class="favourite" @click.prevent="setFavouritePokemon(name)">
+		<button class="favourite" :title="isFavourite ? 'Remove from favourites' : 'Add to favourites'"
+			@click.prevent="setFavouritePokemon(name)">
 			<svg viewBox="0 0 300 275" xmlns="http://www.w3.org/2000/svg" version="1.1" class="star">
 				<polygon stroke="#fff" :fill="isFavourite ? '#fa2356' : ''" stroke-width="20"
 					points="150,25 179,111 269,111 197,165  223,251 150,200 77,251 103,165 31,111 121,111" />
