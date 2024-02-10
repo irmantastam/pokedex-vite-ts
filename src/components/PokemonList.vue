@@ -11,7 +11,7 @@ const favouritePokemons = ref<string[]>([]);
 const pokemonsCount = ref<number>(0);
 const totalPages = ref<number>(0);
 const pokemonsPerPage: number = 8;
-const currentPage = ref<number>(Number(page) ?? 1);
+const currentPage = ref<number>((page && Number(page)) ?? 1);
 const pokemonsOffset = ref<number>((currentPage.value - 1) * pokemonsPerPage);
 
 const pokemonApiEndpoint: string = 'https://pokeapi.co/api/v2/pokemon';
@@ -87,11 +87,12 @@ onMounted(() => {
 });
 
 watch(currentPage, async () => {
-	pokemons.value = await fetchPokemons(pokemonsPerPage, pokemonsOffset.value);
-
 	if (currentPage.value <= 0) {
 		setCurrentPage(1)
+		return;
 	}
+
+	pokemons.value = await fetchPokemons(pokemonsPerPage, pokemonsOffset.value);
 
 	if (currentPage.value > totalPages.value) {
 		setCurrentPage(totalPages.value)
