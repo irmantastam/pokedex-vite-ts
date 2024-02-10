@@ -88,8 +88,8 @@ onMounted(() => {
 watch(pokemonsOffset, async () => {
 	pokemons.value = await fetchPokemons(pokemonsPerPage, pokemonsOffset.value);
 
-	if (pokemonsOffset.value > pokemonsCount.value - pokemonsPerPage) {
-		setPokemonOffset(pokemonsCount.value - pokemonsPerPage)
+	if (pokemonsOffset.value >= pokemonsCount.value) {
+		setPokemonOffset(pokemonsCount.value - (pokemonsCount.value % pokemonsPerPage))
 	}
 
 	if (pokemonsOffset.value <= 0) {
