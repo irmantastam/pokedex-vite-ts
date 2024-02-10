@@ -11,7 +11,7 @@ const favouritePokemons = ref<string[]>([]);
 const pokemonsCount = ref<number>(0);
 const totalPages = ref<number>(0);
 const pokemonsPerPage: number = 8;
-const currentPage = ref<number>(Number(page) || 1);
+const currentPage = ref<number>(Number(page) ?? 1);
 const pokemonsOffset = ref<number>((currentPage.value - 1) * pokemonsPerPage);
 
 const pokemonApiEndpoint: string = 'https://pokeapi.co/api/v2/pokemon';
@@ -65,13 +65,14 @@ const setFavouritePokemon = (name: string) => {
 	saveFavouritePokemonsToLocalStorage();
 }
 
-const setPokemonOffset = (offset: number) => {
-	pokemonsOffset.value = offset >= 0 ? offset : 0;
-	currentPage.value = Math.ceil(pokemonsOffset.value / pokemonsPerPage) + 1;
-	updateUrlPageParam(currentPage.value.toString());
+const setCurrentPage = (page: number) => {
+	pokemonsOffset.value = (page - 1) * pokemonsPerPage;
+	currentPage.value = page;
+
+	updatePageUrlParam(page.toString());
 }
 
-const updateUrlPageParam = (page: string) => {
+const updatePageUrlParam = (page: string) => {
 	searchParams.set('page', page);
 	const updatedParamsPathname = window.location.pathname + '?' + searchParams.toString();
 	history.pushState(null, '', updatedParamsPathname);
@@ -85,15 +86,15 @@ onMounted(() => {
 	}
 });
 
-watch(pokemonsOffset, async () => {
+watch(currentPage, async () => {
 	pokemons.value = await fetchPokemons(pokemonsPerPage, pokemonsOffset.value);
 
-	if (pokemonsOffset.value >= pokemonsCount.value) {
-		setPokemonOffset(pokemonsCount.value - (pokemonsCount.value % pokemonsPerPage))
+	if (currentPage.value <= 0) {
+		setCurrentPage(1)
 	}
 
-	if (pokemonsOffset.value <= 0) {
-		setPokemonOffset(0)
+	if (currentPage.value > totalPages.value) {
+		setCurrentPage(totalPages.value)
 	}
 }, { immediate: true })
 
@@ -118,11 +119,10 @@ const saveFavouritePokemonsToLocalStorage = () => {
 			<strong>{{ totalPages }}</strong>
 		</p>
 		<div class="pagination-buttons" v-if="pokemons">
-			<button v-if="currentPage > 1" class="prev" @click.prevent="setPokemonOffset(pokemonsOffset - pokemonsPerPage)">
+			<button v-if="currentPage > 1" class="prev" @click.prevent="setCurrentPage(currentPage - 1)">
 				Previous
 			</button>
-			<button v-if="currentPage < totalPages" class="next"
-				@click.prevent="setPokemonOffset(pokemonsOffset + pokemonsPerPage)">
+			<button v-if="currentPage < totalPages" class="next" @click.prevent="setCurrentPage(currentPage + 1)">
 				Next
 			</button>
 		</div>
