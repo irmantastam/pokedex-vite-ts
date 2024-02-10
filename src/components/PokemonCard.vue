@@ -26,7 +26,7 @@ const setFavouritePokemon = (name: string) => {
 
 <template>
 	<li class="card">
-		<img :src="photo" class="image" :alt="name" />
+		<img v-if="photo" :src="photo" class="photo" :alt="name" />
 		<h2 class="name">{{ name }}</h2>
 		<button class="favourite" :title="isFavourite ? 'Remove from favourites' : 'Add to favourites'"
 			@click.prevent="setFavouritePokemon(name)">
@@ -48,8 +48,21 @@ const setFavouritePokemon = (name: string) => {
 	box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
 }
 
-.image {
+.photo {
 	max-width: 150px;
+}
+
+.photo+.name {
+	margin: 0 0 10px;
+}
+
+.name {
+	margin: 10px 0;
+	padding: 0 4px;
+	color: #000;
+	text-align: center;
+	text-transform: capitalize;
+	font-weight: 500;
 }
 
 .favourite {
@@ -59,14 +72,6 @@ const setFavouritePokemon = (name: string) => {
 
 .favourite:focus-visible {
 	outline: auto;
-}
-
-.name {
-	margin-bottom: 10px;
-	color: #000;
-	text-align: center;
-	text-transform: capitalize;
-	font-weight: 500;
 }
 
 .star {
